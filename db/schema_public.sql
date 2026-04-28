@@ -5,6 +5,7 @@
 -- Armazena cada início de teste do usuário
 CREATE TABLE public.sessoes_de_teste (
     id uuid PRIMARY KEY DEFAULT gen_random_v4(),
+    usuario_id uuid NOT NULL REFERENCES auth.users(id),
     teste_id uuid NOT NULL REFERENCES quizzes.testes(id),
     criado_em timestamptz NOT NULL DEFAULT now(),
     concluido_em timestamptz DEFAULT now()
