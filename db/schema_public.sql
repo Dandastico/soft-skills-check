@@ -8,24 +8,24 @@ CREATE TABLE public.sessoes_de_teste (
     usuario_id uuid NOT NULL REFERENCES auth.users(id),
     teste_id uuid NOT NULL REFERENCES quizzes.testes(id),
     criado_em timestamptz NOT NULL DEFAULT now(),
-    concluido_em timestamptz DEFAULT now()
+    concluido_em timestamptz
 );
 
 -- Uma linha por resposta do usuário
-CREATE TABLE public.respostas_de_teste (
+CREATE TABLE public.respostas_do_usuario (
     id uuid PRIMARY KEY DEFAULT gen_random_v4(),
     sessao_id uuid NOT NULL REFERENCES public.sessoes_de_teste(id),
     pergunta_id uuid NOT NULL REFERENCES quizzes.perguntas(id),
-    respsota_booleana boolean,
+    resposta_booleana boolean,
     resposta_numerica numeric
 );
 
 -- Liga respostas às alternativas escolhidas. Permite perguntas que aceita múltiplas seleções
 CREATE TABLE public.respostas_alternativas (
-    resposta_id uuid NOT NULL REFERENCES public.respostas_de_teste(id),
-    alternativas_id uuid NOT NULL REFERENCES quizzes.alternativas(id),
+    resposta_id uuid NOT NULL REFERENCES public.respostas_do_usuario(id),
+    alternativa_id uuid NOT NULL REFERENCES quizzes.alternativas(id),
     ordem_da_selecao smallint,
-    PRIMARY KEY (resposta_id, alternativas_id)
+    PRIMARY KEY (resposta_id, alternativa_id)
 );
 
 -- Pontuação calculada por categoria ao final de cada sessão.

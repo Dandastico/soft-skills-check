@@ -2,12 +2,15 @@
 -- SCHEMA DOS TESTES COM PERGUNTAS E RESPOSTAS
 -- =================================================================
 
+-- Criar o schema quizzes
+CREATE SCHEMA IF NOT EXISTS quizzes;
+
 -- Tabela com os tipos de teste. Permite cadastrar, ativar e desativar tipos
 CREATE TABLE quizzes.tipos_de_teste (
     id smallint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     codigo text NOT NULL UNIQUE,
     nome text NOT NULL,
-    descicao text,
+    descricao text,
     ordem smallint DEFAULT 0,
     ativo boolean DEFAULT true
 );
@@ -18,7 +21,7 @@ CREATE TABLE quizzes.testes (
     tipo_id smallint NOT NULL REFERENCES quizzes.tipos_de_teste(id),
     titulo text NOT NULL,
     slug text UNIQUE,
-    descrica text,
+    descricao text,
     duracao smallint,
     imagem text,
     texto_alternativo text,
@@ -28,7 +31,7 @@ CREATE TABLE quizzes.testes (
 -- Tabela que configura algoritmo de cálculo de cada teste, substituindo regras hardcoded
 CREATE TABLE quizzes.regras_de_pontuacao (
     id uuid PRIMARY KEY DEFAULT gen_random_v4(),
-    teste_id uuid NOT NULL REFERENCES quizzes.testes(id),
+    teste_id uuid NOT NULL UNIQUE REFERENCES quizzes.testes(id),
     agregacao text NOT NULL,
     pontuacao_maxima_por_categoria smallint,
     configuracao JSONB
@@ -61,7 +64,7 @@ CREATE TABLE quizzes.alternativas (
     id uuid PRIMARY KEY DEFAULT gen_random_v4(),
     pergunta_id uuid NOT NULL REFERENCES quizzes.perguntas(id),
     texto text NOT NULL,
-    caregoria text,
+    categoria text,
     pontuacao numeric,
     ordem smallint,
     ativo boolean DEFAULT true
@@ -69,7 +72,7 @@ CREATE TABLE quizzes.alternativas (
 
 -- Tabela com textos descritivos de cada perfil/categoria
 CREATE TABLE quizzes.perfis_de_resultado (
-    id smallint GENERATED ALWAYS AS INDENTITY PRIMARY KEY,
+    id smallint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     teste_id uuid NOT NULL REFERENCES quizzes.testes(id),
     categoria text NOT NULL,
     titulo text NOT NULL,
@@ -82,7 +85,7 @@ CREATE TABLE quizzes.perfis_de_resultado (
 --Tabela que define quando cada perfil é exibido com base na pontuação
 CREATE TABLE quizzes.faixas_de_resultado (
     id smallint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
-    perfil_id uuid NOT NULL REFERENCES quizzes.perfis_de_resultado(id),
+    perfil_id smallint NOT NULL REFERENCES quizzes.perfis_de_resultado(id),
     pontuacao_minima numeric NOT NULL,
     pontuacao_maxima numeric NOT NULL,
     ativo boolean NOT NULL DEFAULT true
