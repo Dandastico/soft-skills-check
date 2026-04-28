@@ -35,7 +35,7 @@ CREATE TABLE quizzes.regras_de_pontuacao (
 );
 
 -- Agrupamento de perguntas no teste, necessário para testes onde as perguntas se dividem
-CREATE TABLE quisses.grupos_de_perguntas (
+CREATE TABLE quizzes.grupos_de_perguntas (
     id uuid PRIMARY KEY DEFAULT gen_random_v4(),
     teste_id uuid NOT NULL REFERENCES quizzes.testes(id),
     nome text,
@@ -44,6 +44,7 @@ CREATE TABLE quisses.grupos_de_perguntas (
     ativo boolean NOT NULL DEFAULT true
 );
 
+-- Tabela armazenna o enunciado das perguntas
 CREATE TABLE quizzes.perguntas (
     id uuid PRIMARY KEY DEFAULT gen_random_v4(),
     teste_id uuid NOT NULL REFERENCES quizzes.testes(id),
@@ -55,6 +56,7 @@ CREATE TABLE quizzes.perguntas (
     ativo boolean NOT NULL DEFAULT true
 );
 
+-- Tabela armazena as alternativas das perguntas de múltiplas escolha e Likert
 CREATE TABLE quizzes.alternativas (
     id uuid PRIMARY KEY DEFAULT gen_random_v4(),
     pergunta_id uuid NOT NULL REFERENCES quizzes.perguntas(id),
@@ -63,5 +65,26 @@ CREATE TABLE quizzes.alternativas (
     pontuacao numeric,
     ordem smallint,
     ativo boolean DEFAULT true
+);
+
+-- Tabela com textos descritivos de cada perfil/categoria
+CREATE TABLE quizzes.perfis_de_resultado (
+    id smallint GENERATED ALWAYS AS INDENTITY PRIMARY KEY,
+    teste_id uuid NOT NULL REFERENCES quizzes.testes(id),
+    categoria text NOT NULL,
+    titulo text NOT NULL,
+    descricao text NOT NULL,
+    pontos_fortes text,
+    pontos_fracos text,
+    ativo boolean NOT NULL DEFAULT true
+);
+
+--Tabela que define quando cada perfil é exibido com base na pontuação
+CREATE TABLE quizzes.faixas_de_resultado (
+    id smallint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
+    perfil_id uuid NOT NULL REFERENCES quizzes.perfis_de_resultado(id),
+    pontuacao_minima numeric NOT NULL,
+    pontuacao_maxima numeric NOT NULL,
+    ativo boolean NOT NULL DEFAULT true
 );
 
