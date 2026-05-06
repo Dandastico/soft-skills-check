@@ -127,7 +127,45 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Aplcar função em todas as tabelas com coluna "atualizado_em"
+CREATE TRIGGER trg_tipos_de_teste_atualizar_timestamp
+    BEFORE UPDATE ON quizzes.tipos_de_teste
+    FOR EACH ROW
+    EXECUTE FUNCIONT quizzes.atualizar_timestamp();
 
+CREATE TRIGGER trg_testes_atualizar_timestamp
+    BEFORE UPDATE ON quizzes.testes
+    FOR EACH ROW
+    EXECUTE FUNCTION quizzes.atualizar_timestamp();
+
+CREATE TRIGGER trg_regras_atualizar_timestamp
+    BEFORE UPDATE ON quizzes.regras_de_pontuacao
+    FOR EACH ROW
+    EXECUTE FUNCTION quizzes.atualizar_timestamp();
+
+CREATE TRIGGER trg_grupos_de_perguntas_atualizar_timestamp
+    BEFORE UPDATE ON quizzes.grupos_de_perguntas
+    FOR EACH ROW
+    EXECUTE FUNCTION quizzes.atualizar_timestamp();
+
+CREATE TRIGGER trg_perguntas_atualizar_timestamp
+    BEFORE UPDATE ON quizzes.perguntas
+    FOR EACH ROW
+    EXECUTE FUNCTION quizzes.atualizar_timestamp();
+
+CREATE TRIGGER trg_alternativas_atualizar_timestamp
+    BEFORE UPDATE ON quizzes.alternativas
+    FOR EACH ROW
+    EXECUTE FUNCTION quizzes.atualizar_timestamp();
+
+CREATE TRIGGER trg_perfis_atualizar_timestamp
+    BEFORE UPDATE ON quizzes.perfis_de_resultado
+    FOR EACH ROW
+    EXECUTE FUNCTION quizzes.atualizar_timestamp();
+
+CREATE TRIGGER trg_faixas_atualizar_timestamp
+    BEFORE UPDATE ON quizzes.faixas_de_resultado
+    FOR EACH ROW
+    EXECUTE FUNCTION quizzes.atualizar_timestamp();
 
 -- =================================================================
 -- CRIAÇÃO DOS ÍNDICES PARA AS CHAVES ESTRANGEIRAS (FK)
