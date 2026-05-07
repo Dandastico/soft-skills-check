@@ -15,12 +15,12 @@ CREATE TABLE usuarios.organizacoes (
     atualizado_em timestamptz NOT NULL DEFAULT now()
 );
 
--- Tabela de dmonínio: cursos de graduação
+-- Tabela de odmonínio: cursos de graduação
 CREATE TABLE usuarios.cursos (
     id smallint GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
     nome text NOT NULL UNIQUE,
     ativo boolean NOT NULL DEFAULT true,
-    criado_em timestamptz NOT NULL DEFAULT true,
+    criado_em timestamptz NOT NULL DEFAULT now(),
     atualizado_em timestamptz NOT NULL DEFAULT now()
 );
 
@@ -37,9 +37,9 @@ CREATE TABLE usuarios.profissoes (
 -- Perfil do usuário (1:1 com auth.users)
 CREATE TABLE usuarios.perfis (
     usuario_id uuid PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
-    organizacao_id smallint REFERENCES usuario.organizacoes(id),
+    organizacao_id smallint REFERENCES usuarios.organizacoes(id),
     curso_id smallint REFERENCES usuarios.cursos(id),
-    profissao smallint REFERENCES usuarios.profissoes(id),
+    profissao_id smallint REFERENCES usuarios.profissoes(id),
     idade smallint CHECK (idade BETWEEN 13 AND 100),
     organizacao_livre text,
     curso_livre text,
@@ -53,7 +53,7 @@ CREATE TABLE usuarios.perfis (
 
 -- Função genérica utilizada nas triggers em "usuarios"
 CREATE OR REPLACE FUNCTION usuarios.atualizar_timestamp()
-RETURN TRIGGER AS $$
+RETURNS TRIGGER AS $$
 BEGIN
     NEW.atualizado_em = now();
     RETURN NEW;
@@ -63,17 +63,17 @@ $$ LANGUAGE plpgsql;
 CREATE TRIGGER trg_organizacoes_atualizar_timestamp
     BEFORE UPDATE ON usuarios.organizacoes
     FOR EACH ROW
-    EXECUTE FUNCTION usuarios.atualizar_timestap();
+    EXECUTE FUNCTION usuarios.atualizar_timestamp();
 
 CREATE TRIGGER trg_cursos_atualizar_timestamp
     BEFORE UPDATE ON usuarios.cursos
     FOR EACH ROW
-    EXECUTE FUNCTION usuarios.atualizar_timestap();
+    EXECUTE FUNCTION usuarios.atualizar_timestamp();
 
 CREATE TRIGGER trg_perfis_atualizar_timestamp
     BEFORE UPDATE ON usuarios.perfis
     FOR EACH ROW
-    EXECUTE FUNCTION usuarios.atualizar_timestap();
+    EXECUTE FUNCTION usuarios.atualizar_timestamp();
 
 -- =================================================================
 -- ÍNDICES PARA AS CHAVES ESTRANGEIRAS (FK)
@@ -81,3 +81,4 @@ CREATE TRIGGER trg_perfis_atualizar_timestamp
 
 CREATE INDEX idx_perfis_organizacao_id ON usuarios.perfis(organizacao_id);
 CREATE INDEX idx_perfis_curso_id ON usuarios.perfis(curso_id);
+CREATE INDEX idx_perfis_profissao_id ON usuarios.perfis(profissao_id);

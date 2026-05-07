@@ -101,6 +101,25 @@ CREATE TABLE quizzes.perfis_de_resultado (
     atualizado_em timestamptz NOT NULL DEFAULT now()
 );
 
+-- Tabela que define sessões de testes aplicadas de maneira específicas
+CREATE TABLE quizzes.aplicacoes (
+    id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+    teste_id uuid NOT NULL REFERENCES quizzes.testes(id),
+    aplicador_id uuid REFERENCES auth.users(id), -- a professora, por exemplo
+    organizacao_id smallint REFERENCES usuarios.organizacoes(id), -- SENAC, por exemplo
+    nome text NOT NULL, -- ex.: "Turma ADS Noturno B - 2026/1"
+    codigo_acesso text UNIQUE, -- código que alunos digitam para ingressar no teste
+    permite_anonimo boolean NOT NULL DEFAULT false, -- obriga o usuário a se autenticar ou não
+    inicia_em timestamptz,
+    encerra_em timestamptz,
+    ativo boolean NOT NULL DEFAULT true,
+    criado_em timestamptz NOT NULL DEFAULT now(),
+    atualizado_em timestamptz NOT NULL DEFAULT now(),
+    CONSTRAINT janela_valida CHECK (
+        inicia_em IS NULL OR encerra_em IS NULL OR inicia_em <= encerra_em
+    )
+);
+
 --Tabela que define quando cada perfil é exibido com base na pontuação
 CREATE TABLE quizzes.faixas_de_resultado (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -126,7 +145,7 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql;
 
--- Aplcar função em todas as tabelas com coluna "atualizado_em"
+-- Aplicar função em todas as tabelas com coluna "atualizado_em"
 CREATE TRIGGER trg_tipos_de_teste_atualizar_timestamp
     BEFORE UPDATE ON quizzes.tipos_de_teste
     FOR EACH ROW
@@ -167,6 +186,11 @@ CREATE TRIGGER trg_faixas_atualizar_timestamp
     FOR EACH ROW
     EXECUTE FUNCTION quizzes.atualizar_timestamp();
 
+CREATE TRIGGER trg_aplicacoes_atualizar_timestamp
+    BEFORE UPDATE ON quizzes.aplicacoes
+    FOR EACH ROW
+    EXECUTE FUNCTION quizzes.atualizar_timestamp();
+
 -- =================================================================
 -- CRIAÇÃO DOS ÍNDICES PARA AS CHAVES ESTRANGEIRAS (FK)
 -- =================================================================
@@ -177,3 +201,6 @@ CREATE INDEX idx_alternativas_pergunta_id ON quizzes.alternativas(pergunta_id);
 CREATE INDEX idx_grupos_teste_id ON quizzes.grupos_de_perguntas(teste_id);
 CREATE INDEX idx_perfis_teste_id ON quizzes.perfis_de_resultado(teste_id);
 CREATE INDEX idx_faixas_perfil_id ON quizzes.faixas_de_resultado(perfil_de_resultado_id);
+CREATE INDEX idx_aplicacoes_teste_id ON quizzes.aplicacoes(teste_id);
+CREATE INDEX idx_aplicacoes_aplicador_id ON quizzes.aplicacoes(aplicador_id);
+CREATE INDEX idx_aplicacoes_organizacao_id ON quizzes.aplicacoes(organizacao_id);

@@ -5,12 +5,21 @@
 -- Armazena cada início de teste do usuário
 CREATE TABLE public.sessoes_de_teste (
     id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
-    usuario_id uuid NOT NULL REFERENCES auth.users(id) ON DELETE CASCADE,
+    usuario_id uuid REFERENCES auth.users(id) ON DELETE CASCADE,
     teste_id uuid NOT NULL REFERENCES quizzes.testes(id) ON DELETE RESTRICT,
+    aplicacao_id uuid REFERENCES quizzes.aplicacoes(id),
+    origem text NOT NULL DEFAULT 'visitante_anonimo' CHECK (
+        origem IN ('autenticado', 'aplicacao', 'visitante_anonimo')
+    ),
     criado_em timestamptz NOT NULL DEFAULT now(),
     concluido_em timestamptz,
     CONSTRAINT concluido_apos_criado CHECK (
         concluido_em IS NULL OR concluido_em >= criado_em
+    ),
+    CONSTRAINT origem_coerente CHECK (
+        (origem = 'autenticado' AND usuario_id IS NOT NULL) OR
+        (origem = 'aplicacao' AND aplicacao_id IS NOT NULL) OR
+        (origem = 'visitante_anonimo' AND usuario_id IS NULL AND aplicacao_id IS NULL)
     )
 );
 
@@ -51,6 +60,7 @@ CREATE TABLE public.resultados_de_teste (
 -- sessoes_de_teste
 CREATE INDEX idx_sessoes_usuario ON public.sessoes_de_teste(usuario_id);
 CREATE INDEX idx_sessoes_teste ON public.sessoes_de_teste(teste_id);
+CREATE INDEX idx_sessoes_aplicacao ON public.sessoes_de_teste(aplicacao_id);
 -- respostas_do_usuario
 CREATE INDEX idx_respostas_pergunta ON public.respostas_do_usuario(pergunta_id);
 -- respostas_alternativas
